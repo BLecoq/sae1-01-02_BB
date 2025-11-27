@@ -1,0 +1,37 @@
+TO-DO LIST
+
+SAE 1.01 21 décembre 2025 - 22h59 max
+/!\ ne pas modifiée le main() et le rgb2bl()
+
+A completer : 
+Partie 1 - Chiffrer une image :
+- scrambleId() : retourner l’indice de la ligne dans l’image chiffrée correspondant à la ligne d’indice id dans l’image claire, en fonction de la clé key. 
+/!\ L’entête de la méthode ne doit pas être modifiée.
+
+- generatePermutations() :  générer le tableau de permutation des lignes de l’image, en fonction de la clé key.
+/!\ L’entête de la méthode ne doit pas être modifiée.
+
+- scrambleLines() : appliquer la permutation des lignes de l’image claire et renvoyer l’image chiffrée.
+/!\ L’entête de la méthode ne doit pas être modifiée.
++ Certains éléments comme la lecture des dimensions de l’image ainsi que la création d’une image de type BufferedImage sont déjà fournis.
+
+Partie 2 - Déchiffrer une image :
+- unScrambleLines() : entête est identique à celle de scrambleLines(), inverse de scrambleLines(), à utiliser dans le main() : ajouter un argument supplémentaire process à la ligne de commande pour indiquer si vous souhaitez chiffrer ou déchiffrer l’image. Il pourra prendre les valeurs scramble ou unscramble.
+
+Partie 3 - Casser la clé : 
+Critères de sélection n°1 : la distance euclidienne :
+- euclideanDistance() : calcule une distance d(x,y) entre deux lignes d’une image.
+- scoreEuclidean() : calcule le score total d’une image en sommant les distances euclidiennes entre chaque paire de lignes consécutives. Avec le critère, plus le score est faible, plus l’image est probablement correcte.
+- breakKey() : teste toutes les clés possibles pour déchiffrer l’image chiffrée, calcule le score euclidien de chaque image déchiffrée et retourne la clé ayant permis d’obtenir le meilleur score.
+/!\ Conseil : normaliser les niveaux de gris des lignes avant de calculer la distance euclidienne et pour ne pas risquer de débordement d’entier lors du calcul de la distance euclidienne, on peut soit faire les calculs en virgule flottante (double) plutôt qu’en entier, soit diviser le critère par la somme des variances des deux lignes (une sorte de normalisation). C’est l’idée de la corrélation de Pearson.
+
+
+Critère de sélection n°2 : la corrélation de Pearson :
+- pearsonCorrelation() : calcule le coefficient de corrélation ρ(x,y) entre deux lignes d’une image.
+- scorePearson() : calcule le score total d’une image en sommant les coefficients de corrélation de Pearson entre chaque paire de lignes consécutives. Avec le critère, plus le score est élevé, plus l’image est probablement correcte.
+- breakKey() : Modifier la méthode pour qu’elle prenne en charge le type de score Euclid ou Pearson.
+
+SAE 1.02 : 
+- Comparer les performances des méthodes de recherche de clé implémentées, en termes de complexité (nombre d’opérations arithmétiques, d’accès à la mémoire), de temps de calcul et de qualité du résultat obtenu. Analyser les résultats obtenus.
+- La synthèse de cette comparaison devra être présentée lors d’une soutenance orale de 15 minutes détaillant votre implémentation, les résultats obtenus et les conclusions tirées.
+- Lors de la soutenance, une image brouillée vous sera fournie et vous devrez être capable de retrouver la clé en temps réel (moins d’une minute) en utilisant l’une des méthodes que vous avez implémentées.
