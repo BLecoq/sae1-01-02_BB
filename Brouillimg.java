@@ -60,15 +60,10 @@ public class Brouillimg {
 
 
     /**
-
      * Convertit une image RGB en niveaux de gris (GL).
-
      * @param inputRGB image d'entrée en RGB
-
      * @return tableau 2D des niveaux de gris (0-255)
-
      */
-
     public static int[][] rgb2gl(BufferedImage inputRGB) {
 
         final int height = inputRGB.getHeight();
@@ -106,40 +101,30 @@ public class Brouillimg {
 
 
     /**
-
      * Génère une permutation des entiers 0..size-1 en fonction d'une clé.
-
      * @param size taille de la permutation
-
      * @param key clé de génération (15 bits)
-
      * @return tableau de taille 'size' contenant une permutation des entiers 0..size-1
-
      */
-
     public static int[] generatePermutation(int size, int key){
 
-        int[] scrambleTable = new int[size];
+        int[] perm = new int[size];
 
-        for (int i = 0; i < size; i++) scrambleTable[i] = i;
+        for (int i = 0; i < size; i++) {
+            perm[i] = scrambledId(i, size, key);
+        }
 
-        return scrambleTable;
+        return perm;
 
     }
 
 
     /**
-
      * Mélange les lignes d'une image selon une permutation donnée.
-
      * @param inputImg image d'entrée
-
      * @param perm permutation des lignes (taille = hauteur de l'image)
-
      * @return image de sortie avec les lignes mélangées
-
      */
-
     public static BufferedImage scrambleLines(BufferedImage inputImg, int[] perm){
 
         int width = inputImg.getWidth();
@@ -151,31 +136,34 @@ public class Brouillimg {
 
         BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 
-        
+        for (int ySource = 0; ySource < height; ySource++) {
+            
+            int yDestination = perm[ySource];
 
+            for (int x = 0; x < width; x++) {
+                int pixel = inputImg.getRGB(x, ySource);
+                out.setRGB(x, yDestination, pixel);
+            }
+        }
+        
         return out;
 
     }
 
 
     /**
-
      * Renvoie la position de la ligne id dans l'image brouillée.
-
      * @param id  indice de la ligne dans l'image claire (0..size-1)
-
      * @param size nombre total de lignes dans l'image
-
      * @param key clé de brouillage (15 bits)
-
      * @return indice de la ligne dans l'image brouillée (0..size-1)
-
      */
-
     public static int scrambledId(int id, int size, int key) {
-
-        return id;
-
+        int r = key & 0xFF;
+        int s = (key >> 8) & 0x7F;
+        long a = (2L * s) + 1;
+        long indiceBrouille = (r + (a * id)) % size;
+        return (int) indiceBrouille;
     }
 
 }
