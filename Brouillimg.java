@@ -193,4 +193,24 @@ public class Brouillimg {
         return score;
     }
 
+    public static double[][] breakKey(BufferedImage scrambledImage, String methodeType){
+        int height = scrambledImage.getHeight();
+        int bestKey = -1;
+        double bestScore= Double.MAX_VALUE;
+        double[][] top3key = new double[3][2];
+        for (int i = 0; i < top3key.length; i++){
+            top3key[i][0] = bestScore;
+            top3key[i][1] = -1;
+        }
+
+        for (int key = 0; key < 32768; key++){
+        System.out.println(key);
+        int[] perm = generatePermutation(height, key);
+        BufferedImage unscrambledImage = unScrambleLines(scrambledImage, perm);
+        int[][] imageGL = rgb2gl(unscrambledImage);
+        }
+
+        return top3key;
+    }
+
 }
