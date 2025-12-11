@@ -175,4 +175,22 @@ public class Brouillimg {
         return out;
     }
 
+    public static double euclideanDistance(int[][] imageGL,int x,int y){
+        double somme = 0.0;
+        int width = imageGL[0].length;
+        for (int i = 0; i < width; i++)
+        {
+            somme += Math.pow(imageGL[x][i] - imageGL[y][i], 2);
+        }
+        return Math.sqrt(somme);
+    }
+
+    public static double scoreEuclidian(int[][] imageGL){
+        double score = 0.0;
+        for (int i = 0; i < imageGL.length-1; i++){
+            score += euclideanDistance(imageGL, i, i+1);
+        }
+        return score;
+    }
+
 }
