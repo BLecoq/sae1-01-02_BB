@@ -54,38 +54,22 @@ public class Brouillimg {
      * @return tableau 2D des niveaux de gris (0-255)
      */
     public static int[][] rgb2gl(BufferedImage inputRGB) {
-
         final int height = inputRGB.getHeight();
-
         final int width = inputRGB.getWidth();
-
         int[][] outGL = new int[height][width];
 
-
         for (int y = 0; y < height; y++) {
-
             for (int x = 0; x < width; x++) {
-
                 int argb = inputRGB.getRGB(x, y);
-
                 int r = (argb >> 16) & 0xFF;
-
                 int g = (argb >> 8) & 0xFF;
-
                 int b = argb & 0xFF;
-
                 // luminance simple (évite float)
-
                 int gray = (r * 299 + g * 587 + b * 114) / 1000;
-
                 outGL[y][x] = gray;
-
             }
-
         }
-
         return outGL;
-
     }
 
 
@@ -111,16 +95,11 @@ public class Brouillimg {
      * @return image de sortie avec les lignes mélangées
      */
     public static BufferedImage scrambleLines(BufferedImage inputImg, int[] perm){
-
         int width = inputImg.getWidth();
-
         int height = inputImg.getHeight();
-
         if (perm.length != height) throw new IllegalArgumentException("Taille d'image <> taille permutation");
 
-
         BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
         for (int ySource = 0; ySource < height; ySource++) {
             int yDestination = perm[ySource];
             if (yDestination < 0 || yDestination >= height) {
@@ -131,11 +110,8 @@ public class Brouillimg {
                 out.setRGB(x, yDestination, pixel);
             }
         }
-
         return out;
-
     }
-
 
     /**
      * Renvoie la position de la ligne id dans l'image brouillée.
@@ -211,6 +187,40 @@ public class Brouillimg {
         }
 
         return top3key;
+    }
+
+    // ça va pas marcher, mais tkt bispizza
+    public static int pearsonCorrelation(int[][] imageGL, int x, int y) {
+        double lignehaut;
+        double lignebasx;
+        double lignebasy;
+        double moyennex;
+        double moyenney;
+        double n = imageGL[0].length;
+
+        for (int i = 0; i < n; i++) {
+            moyennex += imageGL[x][i];
+            moyenney += imageGL[i][y];
+        }
+        moyennex = moyennex / n
+        moyenney = moyenney / n
+
+        for (int i = 1; i <= n; i++) {
+            lignehaut += (imageGL[x][i] - moyennex) * (imageGL[i][y] - moyenney);
+            lignebasy += (imageGL[i][y] - moyenney)**2;
+            lignebasx += (imageGL[x][i] - moyennex)**2;
+        }
+        return lignehaut / ( Math.sqrt(lignebasx) * Math.sqrt(lignebasy) );
+    }
+
+    public static scorePearson(int[][] imageGL) {
+        double score;
+        double n = imageGL[0].length
+        for (int i = 0, i< n-1; i++) {
+            for (int j=0; i<n-1; j++ )
+                score += pearsonCorrelation(imageGL, i, j);
+        }
+        return score;
     }
 
 }
