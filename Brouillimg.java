@@ -46,13 +46,11 @@ public class Brouillimg {
     System.out.println("Image écrite: " + outPath);
     }
 
-
-
     /**
-     * Convertit une image RGB en niveaux de gris (GL).
-     * @param inputRGB image d'entrée en RGB
-     * @return tableau 2D des niveaux de gris (0-255)
-     */
+    * Convertit une image RGB en niveaux de gris (GL).
+    * @param inputRGB image d'entrée en RGB
+    * @return tableau 2D des niveaux de gris (0-255)
+    */
     public static int[][] rgb2gl(BufferedImage inputRGB) {
         final int height = inputRGB.getHeight();
         final int width = inputRGB.getWidth();
@@ -72,155 +70,180 @@ public class Brouillimg {
         return outGL;
     }
 
-
     /**
-     * Génère une permutation des entiers 0..size-1 en fonction d'une clé.
-     * @param size taille de la permutation
-     * @param key clé de génération (15 bits)
-     * @return tableau de taille 'size' contenant une permutation des entiers 0..size-1
-     */
-    public static int[] generatePermutation(int size, int key){
-        int[] scrambleTable = new int[size];
-        for (int i = 0; i < size; i++) {
-            scrambleTable[i] = scrambledId(i, size, key);
-        }
-        return scrambleTable;
+    * Génère une permutation des entiers 0..size-1 en fonction d'une clé.
+    * @param size taille de la permutation
+    * @param key clé de génération (15 bits)
+    * @return tableau de taille 'size' contenant une permutation des entiers 0..size-1
+    */
+    public static int[] generatePermutation(int size, int key) {
+        int[] permutation = new int[size];
+        for (int i = 0; i < size; i++) permutation[i] = scrambledId(i, size, key);
+        return permutation;
     }
-
 
     /**
      * Mélange les lignes d'une image selon une permutation donnée.
-     * @param inputImg image d'entrée
-     * @param perm permutation des lignes taille = hauteur de l'image
-     * @return image de sortie avec les lignes mélangées
+     * @param image image d'entrée
+     * @param permutation permutation des lignes taille = hauteur de l'image
+     * @return image avec lignes mélangées
      */
-    public static BufferedImage scrambleLines(BufferedImage inputImg, int[] perm){
-        int width = inputImg.getWidth();
-        int height = inputImg.getHeight();
-        if (perm.length != height) throw new IllegalArgumentException("Taille d'image <> taille permutation");
+    public static BufferedImage scrambleLines(BufferedImage image, int[] permutation) {
+        int largeur = image.getWidth();
+        int hauteur = image.getHeight();
+        if (permutation.length != hauteur) throw new IllegalArgumentException("Taille d'image <> taille permutation");
 
-        BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-        for (int ySource = 0; ySource < height; ySource++) {
-            int yDestination = perm[ySource];
-            if (yDestination < 0 || yDestination >= height) {
-                throw new IllegalArgumentException("Valeur de permutation hors limites: " + yDestination);
-            }
-            for (int x = 0; x < width; x++) {
-                int pixel = inputImg.getRGB(x, ySource);
-                out.setRGB(x, yDestination, pixel);
+        BufferedImage out = new BufferedImage(largeur, hauteur, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < hauteur; y++) {
+            int yDestination = permutation[y];
+            for (int x = 0; x < largeur; x++) {
+                out.setRGB(x, yDestination, image.getRGB(x, y));
             }
         }
         return out;
     }
 
     /**
-     * Renvoie la position de la ligne id dans l'image brouillée.
-     * @param id  indice de la ligne dans l'image claire (0..size-1)
-     * @param size nombre total de lignes dans l'image
-     * @param key clé de brouillage (15 bits)
-     * @return indice de la ligne dans l'image brouillée (0..size-1)
+     * Déchiffre les lignes d'une image selon une permutation donnée.
+     * @param image image d'entrée
+     * @param permutation permutation des lignes taille = hauteur de l'image
+     * @return image dé-mélangée
      */
-    public static int scrambledId(int id, int size, int key) {
-    int r = key & 0xFF;
-    int s = (key >> 8) & 0x7F;
-    return (r + (2 * s + 1) * id) % size;
-    }
+    public static BufferedImage unScrambleLines(BufferedImage image, int[] permutation) {
+        int largeur = image.getWidth();
+        int hauteur = image.getHeight();
+        if (permutation.length != hauteur) throw new IllegalArgumentException("Taille d'image <> taille permutation");
 
+        BufferedImage out = new BufferedImage(largeur, hauteur, BufferedImage.TYPE_INT_ARGB);
+        int[] inverse = new int[hauteur];
+        for (int i = 0; i < hauteur; i++) inverse[permutation[i]] = i;
 
-    public static BufferedImage unScrambleLines(BufferedImage inputImg, int[] perm) {
-        int width = inputImg.getWidth();
-        int height = inputImg.getHeight();
-        if (perm.length != height) throw new IllegalArgumentException("Taille d'image <> taille permutation");
-
-        BufferedImage out = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-
-        int[] inverse = new int[height];
-        for (int i = 0; i < height; i++) {
-            int p = perm[i];
-            if (p < 0 || p >= height) throw new IllegalArgumentException("Valeur de permutation hors limites : " + p);
-            inverse[p] = i;
-        }
-        for (int yScr = 0; yScr < height; yScr++) {
-            int yOrig = inverse[yScr];
-            for (int x = 0; x < width; x++) {
-                int pixel = inputImg.getRGB(x, yScr);
-                out.setRGB(x, yOrig, pixel);
+        for (int y = 0; y < hauteur; y++) {
+            int ySource = inverse[y];
+            for (int x = 0; x < largeur; x++) {
+                out.setRGB(x, ySource, image.getRGB(x, y));
             }
         }
-
         return out;
     }
 
-    public static double euclideanDistance(int[][] imageGL,int x,int y){
+    /**
+     * Calcule l'indice de la ligne brouillée correspondant à la ligne claire.
+     * @param id indice de la ligne dans l'image claire
+     * @param size hauteur de l'image
+     * @param key clé de chiffrement (15 bits)
+     * @return indice de la ligne dans l'image brouillée
+     */
+    public static int scrambledId(int id, int size, int key) {
+        int r = key & 0xFF;
+        int s = (key >> 8) & 0x7F;
+        return (r + (2 * s + 1) * id) % size;
+    }
+
+    /**
+     * Calcule la distance euclidienne entre deux lignes.
+     * @param imageGL image en niveaux de gris
+     * @param ligne1 indice de la première ligne
+     * @param ligne2 indice de la seconde ligne
+     * @return distance euclidienne
+     */
+    public static double distanceEuclidian(int[][] imageGL, int ligne1, int ligne2) {
         double somme = 0.0;
-        int width = imageGL[0].length;
-        for (int i = 0; i < width; i++)
-        {
-            somme += Math.pow(imageGL[x][i] - imageGL[y][i], 2);
+        int largeur = imageGL[0].length;
+        for (int i = 0; i < largeur; i++) {
+            double diff = imageGL[ligne1][i] - imageGL[ligne2][i];
+            somme += diff * diff;
         }
         return Math.sqrt(somme);
     }
 
-    public static double scoreEuclidian(int[][] imageGL){
+    /**
+     * Calcule le score total euclidien pour une image selon une permutation.
+     * @param gl image en niveaux de gris
+     * @param permutation permutation des lignes
+     * @return score total
+     */
+    public static double scoreEuclidian(int[][] gl, int[] permutation) {
         double score = 0.0;
-        for (int i = 0; i < imageGL.length-1; i++){
-            score += euclideanDistance(imageGL, i, i+1);
-        }
+        for (int i = 0; i < permutation.length - 1; i++)
+            score += distanceEuclidian(gl, permutation[i], permutation[i + 1]);
         return score;
     }
 
-    public static double[][] breakKey(BufferedImage scrambledImage, String methodeType){
-        int height = scrambledImage.getHeight();
-        int bestKey = -1;
-        double bestScore= Double.MAX_VALUE;
-        double[][] top3key = new double[3][2];
-        for (int i = 0; i < top3key.length; i++){
-            top3key[i][0] = bestScore;
-            top3key[i][1] = -1;
+
+    /**
+    * Calcule le coefficient de corrélation de Pearson entre deux lignes.
+    * @param gl image en niveaux de gris
+    * @param ligneX indice de la première ligne
+    * @param ligneY indice de la seconde ligne
+    * @return coefficient de Pearson (-1 à 1)
+    */
+    public static double correlationPearson(int[][] gl, int ligneX, int ligneY) {
+        int largeur = gl[0].length;
+        double moyenneX = 0.0;
+        double moyenneY = 0.0;
+
+        for (int i = 0; i < largeur; i++) {
+            moyenneX += gl[ligneX][i];
+            moyenneY += gl[ligneY][i];
+            }
+
+        moyenneX /= largeur;
+        moyenneY /= largeur;
+
+        double numerateur = 0.0;
+        double denominateurX = 0.0;
+        double denominateurY = 0.0;
+
+        for (int i = 0; i < largeur; i++) {
+            double ecartX = gl[ligneX][i] - moyenneX;
+            double ecartY = gl[ligneY][i] - moyenneY;
+
+            numerateur += ecartX * ecartY;
+            denominateurX += ecartX * ecartX;
+            denominateurY += ecartY * ecartY;
         }
 
-        for (int key = 0; key < 32768; key++){
-        System.out.println(key);
-        int[] perm = generatePermutation(height, key);
-        BufferedImage unscrambledImage = unScrambleLines(scrambledImage, perm);
-        int[][] imageGL = rgb2gl(unscrambledImage);
-        }
-
-        return top3key;
+        return numerateur / (Math.sqrt(denominateurX) * Math.sqrt(denominateurY) + 1e-10);
     }
 
-    // ça va pas marcher, mais tkt bispizza
-    public static int pearsonCorrelation(int[][] imageGL, int x, int y) {
-        double lignehaut;
-        double lignebasx;
-        double lignebasy;
-        double moyennex;
-        double moyenney;
-        double n = imageGL[0].length;
-
-        for (int i = 0; i < n; i++) {
-            moyennex += imageGL[x][i];
-            moyenney += imageGL[i][y];
-        }
-        moyennex = moyennex / n
-        moyenney = moyenney / n
-
-        for (int i = 1; i <= n; i++) {
-            lignehaut += (imageGL[x][i] - moyennex) * (imageGL[i][y] - moyenney);
-            lignebasy += (imageGL[i][y] - moyenney)**2;
-            lignebasx += (imageGL[x][i] - moyennex)**2;
-        }
-        return lignehaut / ( Math.sqrt(lignebasx) * Math.sqrt(lignebasy) );
-    }
-
-    public static scorePearson(int[][] imageGL) {
-        double score;
-        double n = imageGL[0].length
-        for (int i = 0, i< n-1; i++) {
-            for (int j=0; i<n-1; j++ )
-                score += pearsonCorrelation(imageGL, i, j);
-        }
+    /**
+    * Calcule le score total Pearson pour une image selon une permutation.
+    * @param gl image en niveaux de gris
+    * @param permutation permutation des lignes
+    * @return score total Pearson
+    */
+    public static double scorePearson(int[][] gl, int[] permutation) {
+        double score = 0.0;
+        for (int i = 0; i < permutation.length - 1; i++)
+            score += correlationPearson(gl, permutation[i], permutation[i + 1]);
         return score;
     }
 
+    /**
+     * Recherche la meilleure clé par force brute selon le critère Pearson ou Euclidien.
+     * @param gl image en niveaux de gris
+     * @param type "pearson" ou "euclid"
+     * @return top 3 [score, clé]
+     */
+    public static double[][] breakKey(int[][] gl, String type){
+        int h = gl.length;
+        double[][] top3 = new double[3][2];
+        for(int i=0;i<3;i++){
+            top3[i][0] = type.equals("pearson") ? -Double.MAX_VALUE : Double.MAX_VALUE;
+            top3[i][1] = -1;
+        }
+        for(int k=0;k<32768;k++){
+            int[] perm = generatePermutation(h, k);
+            double score = type.equals("pearson") ? scorePearson(gl, perm) : scoreEuclidian(gl, perm);
+            for(int i=0;i<3;i++){
+                boolean better = type.equals("pearson") ? score>top3[i][0] : score<top3[i][0];
+                if(better){
+                    for(int j=2;j>i;j--){top3[j][0]=top3[j-1][0]; top3[j][1]=top3[j-1][1];}
+                    top3[i][0]=score; top3[i][1]=k; break;
+                }
+            }
+        }
+        return top3;
+    }
 }
