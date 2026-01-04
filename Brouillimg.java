@@ -273,12 +273,13 @@ public class Brouillimg {
      * @param ligne2 indice de la seconde ligne
      * @return distance TV
      */
-    public static double distanceTV(int[][] gl, int ligne1, int ligne2) {
-        double somme = 0.0;
+    public static long distanceTV(int[][] gl, int ligne1, int ligne2) {
+        long somme = 0;
         int largeur = gl[0].length;
 
-        for (int i = 0; i < largeur; i++) {
-            somme += Math.abs(gl[ligne1][i] - gl[ligne2][i]);
+        for (int i = 0; i < largeur; i += 4) {
+            int diff = gl[ligne1][i] - gl[ligne2][i];
+            somme += (diff < 0) ? -diff : diff;
         }
         return somme;
     }
@@ -290,11 +291,11 @@ public class Brouillimg {
      * @param permutation permutation des lignes
      * @return score TV
      */
-    public static double scoreTV(int[][] gl, int[] permutation) {
-        double score = 0.0;
+    public static long scoreTV(int[][] gl, int[] permutation) {
+        long score = 0;
 
         for (int i = 0; i < permutation.length - 1; i++) {
-            score += distanceTV(gl, permutation[i], permutation[i + 1]);
+            score += distanceTV(gl, permutation[i], permutation[i+1]);
         }
         return score;
     }
