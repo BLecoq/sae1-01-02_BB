@@ -1,3 +1,4 @@
+// Lecoq Brian Bittiger Bryan groupe de SAE n°4
 
 import java.awt.image.BufferedImage;
 import java.io.File;
