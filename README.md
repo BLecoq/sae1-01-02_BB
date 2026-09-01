@@ -1,2 +1,3 @@
 # SAE 1-01 et 02 
-Lecoq Brian et Bittiger Bryan
+Projet universitaire de brouillage et débrouillage d'images en Java
+Fais par Lecoq Brian et Bittiger Bryan
